@@ -1,6 +1,11 @@
 import json
 import pprint
 import sqlite3
+import gspread
+from oauth2client.service_account import ServiceAccountCredentials
+from datetime import datetime
+
+
 
 def insert_one(user:str,type:str,category_1:str,category_2:str,summ:float,currency:str,comments:str,date_insert) -> None:
 
@@ -31,4 +36,29 @@ def read_config():
     return data
 
 
+def daily_stats():
+    con = sqlite3.connect('./data/database.db')
+    cursor = con.cursor()
+    return 'daily'
+
+
+# def insert_one_google(user:str,type:str,category_1:str,category_2:str,summ:float,currency:str,comments:str,date_insert) -> None:
+#     pass
+
+
+def insert_one_google(list_for_insert:list) -> None:
+
+    scope = ["https://spreadsheets.google.com/feeds", 'https://www.googleapis.com/auth/spreadsheets',
+             "https://www.googleapis.com/auth/drive.file", "https://www.googleapis.com/auth/drive"]
+    creds = ServiceAccountCredentials.from_json_keyfile_name('./data/gsheetconfig.json', scope)
+    client = gspread.authorize(creds)
+    sheet = client.open('MoneyTracker').worksheet("logs")
+    sheet.append_rows([list_for_insert])
+  
+# insert_in_one_request(['test1','test2','test1','test2','test1','test2','test1','test2'])
+
+def current_date_string():
+    now = datetime.now()
+    dt_string = now.strftime("%d/%m/%Y %H:%M:%S")
+    return dt_string
 

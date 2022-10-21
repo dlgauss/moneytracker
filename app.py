@@ -7,7 +7,7 @@ from aiogram.contrib.fsm_storage.memory import MemoryStorage
 from aiogram.dispatcher.filters.state import StatesGroup, State
 from app_functions import read_config
 
-from app_functions import insert_one, read_income_categories,read_spend_categories
+from app_functions import insert_one, read_income_categories,read_spend_categories,insert_one_google,current_date_string
 from datetime import datetime
 
 
@@ -62,6 +62,37 @@ async def send_welcome(message: types.Message):
 async def send_welcome(message: types.Message):
     await message.reply("Hi you will start to add expense operation")
 
+
+@dp.message_handler(commands=['stats'])
+async def stats(message: types.Message):
+    # daily weekly monthly last 6 months last year
+    track_menu = InlineKeyboardMarkup()
+    dayly = InlineKeyboardButton(text="Daily",callback_data="daily")
+    weekly = InlineKeyboardButton(text="Weekly",callback_data="weekly")
+    monthly = InlineKeyboardButton(text="Monthly",callback_data="monthly")
+    last_6_months = InlineKeyboardButton(text="Last 6 Months",callback_data="last_6_months")
+    track_menu.insert(dayly)
+    track_menu.insert(weekly)
+    track_menu.insert(monthly)
+    track_menu.insert(last_6_months)
+    await bot.send_message(message.from_user.id,f"Please choose one: ",reply_markup=track_menu)
+
+
+@dp.callback_query_handler(text='daily')
+async def daily(message: types.Message,state:FSMContext):
+    await bot.send_message(message.from_user.id,f"Daily stats: ")
+
+@dp.callback_query_handler(text='weekly')
+async def weekly(message: types.Message,state:FSMContext):
+    await bot.send_message(message.from_user.id,f"Weekly stats: ")
+
+@dp.callback_query_handler(text='monthly')
+async def monthly(message: types.Message,state:FSMContext):
+    await bot.send_message(message.from_user.id,f"Monthly stats: ")\
+
+@dp.callback_query_handler(text='last_6_months')
+async def last_6_months(message: types.Message,state:FSMContext):
+    await bot.send_message(message.from_user.id,f"Last 6 months stats: ")
 
 
 @dp.message_handler()
@@ -174,16 +205,19 @@ async def get_data(message: types.Message,state:FSMContext):
         currency = data['asset_currency']
         comment = data['asset_comment']
         oper_type = data['asset_type']
-        insert_one(
-        user=message.from_user.first_name,
-        type=oper_type,
-        category_1=cat1,
-        category_2=cat2,
-        summ=summ,
-        currency=currency,
-        comments=comment,
-        date_insert=datetime.now()
-    )
+        # user:str,type:str,category_1:str,category_2:str,summ:float,currency:str,comments:str,date_insert
+        append_data = [message.from_user.first_name,oper_type,cat1,cat2,summ,currency,comment,current_date_string()]
+        insert_one_google(append_data)
+    #     insert_one(
+    #     user=message.from_user.first_name,
+    #     type=oper_type,
+    #     category_1=cat1,
+    #     category_2=cat2,
+    #     summ=summ,
+    #     currency=currency,
+    #     comments=comment,
+    #     date_insert=datetime.now()
+    # )
         await bot.send_message(message.from_user.id,f"Has been succesfully added:\nOpperation type: {oper_type}\nCat 1{cat1}\nCat 2{cat2}\nSumm: {summ}\nCurrency: {currency}\nComment: {comment}")   
         await state.finish()
 
@@ -206,16 +240,18 @@ async def update_in_db(message: types.Message,state:FSMContext):
     summ = data['asset_summ']
     currency = data['asset_currency']
     oper_type = data['asset_type']
-    insert_one(
-        user=message.from_user.first_name,
-        type=oper_type,
-        category_1=cat1,
-        category_2=cat2,
-        summ=summ,
-        currency=currency,
-        comments=comment,
-        date_insert=datetime.now()
-    )
+    append_data = [message.from_user.first_name,oper_type,cat1,cat2,summ,currency,comment,current_date_string()]
+    insert_one_google(append_data)
+    # insert_one(
+    #     user=message.from_user.first_name,
+    #     type=oper_type,
+    #     category_1=cat1,
+    #     category_2=cat2,
+    #     summ=summ,
+    #     currency=currency,
+    #     comments=comment,
+    #     date_insert=datetime.now()
+    # )
     await bot.send_message(message.from_user.id,f"Has been succesfully added:\nOpperation type: {oper_type}\nCat 1{cat1}\nCat 2{cat2}\nSumm: {summ}\nCurrency: {currency}\nComment: {comment}")
     await state.finish()
 
@@ -322,17 +358,18 @@ async def get_data(message: types.Message,state:FSMContext):
         currency = data['asset_currency']
         comment = data['asset_comment']
         oper_type = data['asset_type']
-        
-        insert_one(
-        user=message.from_user.first_name,
-        type=oper_type,
-        category_1=cat1,
-        category_2=cat2,
-        summ=summ,
-        currency=currency,
-        comments=comment,
-        date_insert=datetime.now()
-    )
+        append_data = [message.from_user.first_name,oper_type,cat1,cat2,summ,currency,comment,current_date_string()]
+        insert_one_google(append_data)
+    #     insert_one(
+    #     user=message.from_user.first_name,
+    #     type=oper_type,
+    #     category_1=cat1,
+    #     category_2=cat2,
+    #     summ=summ,
+    #     currency=currency,
+    #     comments=comment,
+    #     date_insert=datetime.now()
+    # )
         await bot.send_message(message.from_user.id,f"Has been succesfully added:\nOpperation type: {oper_type}\nCat 1{cat1}\nCat 2{cat2}\nSumm: {summ}\nCurrency: {currency}\nComment: {comment}") 
 
         await state.finish()
@@ -356,18 +393,20 @@ async def update_in_db(message: types.Message,state:FSMContext):
     summ = data['asset_summ']
     currency = data['asset_currency']
     oper_type = data['asset_type']
-    # insert_one(user:str,type:str,category_1:str,category_2:str,summ:float,currency:str,comments:str,date_insert)
-    insert_one(
-        user=message.from_user.first_name,
-        type=oper_type,
-        category_1=cat1,
-        category_2=cat2,
-        summ=summ,
-        currency=currency,
-        comments=comment,
-        date_insert=datetime.now()
-    )
-    await bot.send_message(message.from_user.id,f"Has been succesfully added:\nOpperation type: {oper_type}\nCat 1{cat1}\nCat 2{cat2}\nSumm: {summ}\nCurrency: {currency}\nComment: {comment}")
+    append_data = [message.from_user.first_name,oper_type,cat1,cat2,summ,currency,comment,current_date_string()]
+    insert_one_google(append_data)
+    
+    # insert_one(
+    #     user=message.from_user.first_name,
+    #     type=oper_type,
+    #     category_1=cat1,
+    #     category_2=cat2,
+    #     summ=summ,
+    #     currency=currency,
+    #     comments=comment,
+    #     date_insert=datetime.now()
+    # )
+    await bot.send_message(message.from_user.id,f"Has been succesfully added:\nOpperation type: {oper_type}\nCat 1 {cat1}\nCat 2 {cat2}\nSumm: {summ}\nCurrency: {currency}\nComment: {comment}")
     await state.finish()
 
 
