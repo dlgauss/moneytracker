@@ -59,6 +59,6 @@ def insert_one_google(list_for_insert:list) -> None:
 
 def current_date_string():
     now = datetime.now()
-    dt_string = now.strftime("%d/%m/%Y %H:%M:%S")
+    dt_string = now.strftime("%m/%d/%Y %H:%M")
     return dt_string
 
