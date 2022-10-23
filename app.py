@@ -52,15 +52,15 @@ async def send_welcome(message: types.Message):
    
     await message.reply("Hi!\nI'm EchoBot!\nPowered by aiogram.")
 
-@dp.message_handler(commands=['spend'])
-async def send_welcome(message: types.Message):
-    await message.reply("Hi you will start to add income operation")
+# @dp.message_handler(commands=['spend'])
+# async def send_welcome(message: types.Message):
+#     await message.reply("Hi you will start to add income operation")
 
 
 
-@dp.message_handler(commands=['income'])
-async def send_welcome(message: types.Message):
-    await message.reply("Hi you will start to add expense operation")
+# @dp.message_handler(commands=['income'])
+# async def send_welcome(message: types.Message):
+#     await message.reply("Hi you will start to add expense operation")
 
 
 @dp.message_handler(commands=['stats'])
@@ -112,7 +112,6 @@ async def echo(message: types.Message):
 async def income(message: types.Message,state:FSMContext):
     
 
-
     await AssetState.asset_type.set()
     asset_type = 'income'
     await state.update_data(asset_type=asset_type)
@@ -125,7 +124,7 @@ async def income(message: types.Message,state:FSMContext):
         greet_kb.add(button_income)
     
 
-
+    greet_kb.add(KeyboardButton('CANCEL'))
     await bot.send_message(message.from_user.id,'Type: Income')
     await bot.send_message(message.from_user.id,"Please select Category 1",reply_markup=greet_kb)
     await AssetState.next()
@@ -133,19 +132,19 @@ async def income(message: types.Message,state:FSMContext):
 @dp.message_handler(state=AssetState.asset_category_1)
 async def get_cat_1_income(message: types.Message,state:FSMContext): 
     asset_category_1=message.text
-    
-    await state.update_data(asset_category_1=asset_category_1)
+    if asset_category_1 == 'CANCEL':
+        await bot.send_message(message.from_user.id,"Operation has been canceled")
+        await state.finish()
+    else:
+        await state.update_data(asset_category_1=asset_category_1)
+        fields = INCOME_CATEGORIES[0]['ro'][asset_category_1]
+        cat_2_kb = ReplyKeyboardMarkup(resize_keyboard=True,one_time_keyboard=True)
+        for cat in fields:
+            button_income = KeyboardButton(cat)
+            cat_2_kb.add(button_income)
 
-    fields = INCOME_CATEGORIES[0]['ro'][asset_category_1]
-
-    cat_2_kb = ReplyKeyboardMarkup(resize_keyboard=True,one_time_keyboard=True)
-
-    for cat in fields:
-        button_income = KeyboardButton(cat)
-        cat_2_kb.add(button_income)
-
-    await bot.send_message(message.from_user.id,"Please select Category 2",reply_markup=cat_2_kb)
-    await AssetState.next()
+        await bot.send_message(message.from_user.id,"Please select Category 2",reply_markup=cat_2_kb)
+        await AssetState.next()
 
 @dp.message_handler(state=AssetState.asset_category_2)
 async def get_data(message: types.Message,state:FSMContext): 
@@ -205,7 +204,7 @@ async def get_data(message: types.Message,state:FSMContext):
         currency = data['asset_currency']
         comment = data['asset_comment']
         oper_type = data['asset_type']
-        # user:str,type:str,category_1:str,category_2:str,summ:float,currency:str,comments:str,date_insert
+
         append_data = [message.from_user.first_name,oper_type,cat1,cat2,summ,currency,comment,current_date_string()]
         insert_one_google(append_data)
     #     insert_one(
@@ -257,10 +256,6 @@ async def update_in_db(message: types.Message,state:FSMContext):
 
 
 
-# @dp.callback_query_handler(text='spend')
-# async def income(message: types.Message,state:FSMContext):
-#     await bot.send_message(message.from_user.id,'Type: Spend')
-
 #  SPEND
 
 @dp.callback_query_handler(text='spend')
@@ -278,7 +273,8 @@ async def income(message: types.Message,state:FSMContext):
         greet_kb.add(button_income)
     
 
-
+    greet_kb.add(KeyboardButton('CANCEL'))
+    
     await bot.send_message(message.from_user.id,'Type: Spend')
     await bot.send_message(message.from_user.id,"Please select Category 1",reply_markup=greet_kb)
     await AssetStateSpend.next()
@@ -286,19 +282,21 @@ async def income(message: types.Message,state:FSMContext):
 @dp.message_handler(state=AssetStateSpend.asset_category_1)
 async def get_cat_1_income(message: types.Message,state:FSMContext): 
     asset_category_1=message.text
-    
-    await state.update_data(asset_category_1=asset_category_1)
 
-    fields = EXPENSES_CATEGORIES[0]['ro'][asset_category_1]
+    if asset_category_1 == 'CANCEL':
+        await bot.send_message(message.from_user.id,"Operation has been canceled")
+        await state.finish()
 
-    cat_2_kb = ReplyKeyboardMarkup(resize_keyboard=True,one_time_keyboard=True)
+    else:
+        await state.update_data(asset_category_1=asset_category_1)
+        fields = EXPENSES_CATEGORIES[0]['ro'][asset_category_1]
+        cat_2_kb = ReplyKeyboardMarkup(resize_keyboard=True,one_time_keyboard=True)
+        for cat in fields:
+            button_income = KeyboardButton(cat)
+            cat_2_kb.add(button_income)
 
-    for cat in fields:
-        button_income = KeyboardButton(cat)
-        cat_2_kb.add(button_income)
-
-    await bot.send_message(message.from_user.id,"Please select Category 2",reply_markup=cat_2_kb)
-    await AssetStateSpend.next()
+        await bot.send_message(message.from_user.id,"Please select Category 2",reply_markup=cat_2_kb)
+        await AssetStateSpend.next()
 
 @dp.message_handler(state=AssetStateSpend.asset_category_2)
 async def get_data(message: types.Message,state:FSMContext): 

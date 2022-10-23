@@ -1,5 +1,4 @@
 '''
-spend - Write expenses
-income - Write income
+add_log - Add expense / income
 stats - Show stats
 '''
