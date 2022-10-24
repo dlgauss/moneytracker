@@ -6,6 +6,14 @@ from oauth2client.service_account import ServiceAccountCredentials
 from datetime import datetime
 
 
+def get_stats() -> dict:
+    scope = ["https://spreadsheets.google.com/feeds", 'https://www.googleapis.com/auth/spreadsheets',
+             "https://www.googleapis.com/auth/drive.file", "https://www.googleapis.com/auth/drive"]
+    creds = ServiceAccountCredentials.from_json_keyfile_name('./data/gsheetconfig.json', scope)
+    client = gspread.authorize(creds)
+    sheet = client.open('MoneyTracker').worksheet("TrackDashBoard")
+    data = sheet.get("A13:B19")
+    return data
 
 def insert_one(user:str,type:str,category_1:str,category_2:str,summ:float,currency:str,comments:str,date_insert) -> None:
 
@@ -42,8 +50,6 @@ def daily_stats():
     return 'daily'
 
 
-# def insert_one_google(user:str,type:str,category_1:str,category_2:str,summ:float,currency:str,comments:str,date_insert) -> None:
-#     pass
 
 
 def insert_one_google(list_for_insert:list) -> None:
@@ -55,10 +61,11 @@ def insert_one_google(list_for_insert:list) -> None:
     sheet = client.open('MoneyTracker').worksheet("logs")
     sheet.append_rows([list_for_insert])
   
-# insert_in_one_request(['test1','test2','test1','test2','test1','test2','test1','test2'])
 
 def current_date_string():
     now = datetime.now()
     dt_string = now.strftime("%m/%d/%Y %H:%M")
     return dt_string
 
+
+get_stats()

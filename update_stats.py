@@ -1,6 +1,5 @@
 from datetime import datetime,timedelta
 import gspread
-from numpy import record
 from oauth2client.service_account import ServiceAccountCredentials
 import pandas as pd
 import calendar
@@ -50,7 +49,7 @@ def calculate_summ_ranged(date_start: str,  date_end: str, records: pd.DataFrame
     return records.loc[mask,"summ"].sum()
 
 
-def main() -> None:
+def main() -> dict:
     today = datetime.now().date()
     today_str = today.strftime("%m/%d/%Y %H:%M")
 
@@ -98,7 +97,13 @@ def main() -> None:
     print('Updating sheet..')
     update_stats_sheets(yesterdays_summ_spended, todays_summ_spended, week_summ_spended, month_sum_spended,year_sum_spended)
     print('Done')
-
+    return {
+        "yesterday":yesterdays_summ_spended,
+        "today":todays_summ_spended,
+        "week":week_summ_spended,
+        "month":month_sum_spended,
+        "year":year_sum_spended
+    }
 
 if __name__ == "__main__":
     main()

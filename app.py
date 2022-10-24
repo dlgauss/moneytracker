@@ -9,7 +9,7 @@ from app_functions import read_config
 
 from app_functions import insert_one, read_income_categories,read_spend_categories,insert_one_google,current_date_string
 from datetime import datetime
-
+from update_stats import main as update_data
 
 INCOME_CATEGORIES = read_income_categories()
 EXPENSES_CATEGORIES = read_spend_categories()
@@ -66,34 +66,47 @@ async def send_welcome(message: types.Message):
 @dp.message_handler(commands=['stats'])
 async def stats(message: types.Message):
     # daily weekly monthly last 6 months last year
+    stats = update_data()
     track_menu = InlineKeyboardMarkup()
-    dayly = InlineKeyboardButton(text="Daily",callback_data="daily")
-    weekly = InlineKeyboardButton(text="Weekly",callback_data="weekly")
-    monthly = InlineKeyboardButton(text="Monthly",callback_data="monthly")
-    last_6_months = InlineKeyboardButton(text="Last 6 Months",callback_data="last_6_months")
+    dayly = InlineKeyboardButton(text="Yesterday",callback_data="yesterday")
+    weekly = InlineKeyboardButton(text="Today",callback_data="today")
+    monthly = InlineKeyboardButton(text="Week",callback_data="week")
+    last_6_months = InlineKeyboardButton(text="Month",callback_data="month")
+    year = InlineKeyboardButton(text='Year',callback_data='year')
     track_menu.insert(dayly)
     track_menu.insert(weekly)
     track_menu.insert(monthly)
     track_menu.insert(last_6_months)
-    await bot.send_message(message.from_user.id,f"Please choose one: ",reply_markup=track_menu)
+
+    template = f"""Yesterday: {stats.get("yesterday")}
+Today: {stats.get("today")}
+Week: {stats.get("week")}
+Month: {stats.get("month")}
+Last year: {stats.get("year")}
+    """
+    await bot.send_message(message.from_user.id,template)
+    await bot.send_message(message.from_user.id,f"See detailed: ",reply_markup=track_menu)
 
 
-@dp.callback_query_handler(text='daily')
-async def daily(message: types.Message,state:FSMContext):
-    await bot.send_message(message.from_user.id,f"Daily stats: ")
+@dp.callback_query_handler(text='yesterday')
+async def yesterday(message: types.Message,state:FSMContext):
+    await bot.send_message(message.from_user.id,f"yesterday stats: ")
 
-@dp.callback_query_handler(text='weekly')
-async def weekly(message: types.Message,state:FSMContext):
-    await bot.send_message(message.from_user.id,f"Weekly stats: ")
+@dp.callback_query_handler(text='today')
+async def today(message: types.Message,state:FSMContext):
+    await bot.send_message(message.from_user.id,f"today stats: ")
 
-@dp.callback_query_handler(text='monthly')
+@dp.callback_query_handler(text='week')
+async def week(message: types.Message,state:FSMContext):
+    await bot.send_message(message.from_user.id,f"week stats: ")\
+
+@dp.callback_query_handler(text='month')
 async def monthly(message: types.Message,state:FSMContext):
-    await bot.send_message(message.from_user.id,f"Monthly stats: ")\
+    await bot.send_message(message.from_user.id,f"month stats: ")
 
-@dp.callback_query_handler(text='last_6_months')
-async def last_6_months(message: types.Message,state:FSMContext):
-    await bot.send_message(message.from_user.id,f"Last 6 months stats: ")
-
+@dp.callback_query_handler(text='year')
+async def year(message: types.Message,state:FSMContext):
+    await bot.send_message(message.from_user.id,f"year stats: ")
 
 @dp.message_handler()
 async def echo(message: types.Message):
